@@ -1,3 +1,5 @@
+# centos/sclo spec file for php-pecl-redis4, from:
+#
 # remirepo spec file for php-pecl-redis4
 #
 # Copyright (c) 2012-2018 Remi Collet
@@ -7,54 +9,45 @@
 # Please, preserve the changelog entries
 #
 
-# we don't want -z defs linker flag
-%undefine _strict_symbol_defs_build
-
 %if 0%{?scl:1}
 %global sub_prefix %{scl_prefix}
 %scl_package       php-pecl-redis
+%if "%{scl}" == "rh-php70"
+%global sub_prefix sclo-php70-
+%endif
+%if "%{scl}" == "rh-php71"
+%global sub_prefix sclo-php71-
+%endif
 %else
 %global _root_bindir %{_bindir}
 %endif
 
 %global pecl_name   redis
-%global with_zts    0%{!?_without_zts:%{?__ztsphp:1}}
-%global with_tests  0%{!?_without_tests:1}
 %global with_igbin  1
-%if "%{php_version}" < "5.6"
-# after igbinary
-%global ini_name    %{pecl_name}.ini
-%else
 # after 40-igbinary
 %global ini_name    50-%{pecl_name}.ini
-%endif
 %global upstream_version 4.1.0
-#global upstream_prever  RC3
 
 Summary:       Extension for communicating with the Redis key-value store
 Name:          %{?sub_prefix}php-pecl-redis4
 Version:       %{upstream_version}%{?upstream_prever:~%{upstream_prever}}
-Release:       1%{?dist}%{!?scl:%{!?nophptag:%(%{__php} -r 'echo ".".PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;')}}
+Release:       1%{?dist}
 Source0:       http://pecl.php.net/get/%{pecl_name}-%{upstream_version}%{?upstream_prever}.tgz
 License:       PHP
+Group:         Development/Languages
 URL:           http://pecl.php.net/package/redis
 
-BuildRequires: %{?dtsprefix}gcc
+BuildRequires: gcc
 BuildRequires: %{?scl_prefix}php-devel
 BuildRequires: %{?scl_prefix}php-pear
 %if %{with_igbin}
-BuildRequires: %{?sub_prefix}php-pecl-igbinary-devel
-%endif
-BuildRequires: liblzf-devel
-# to run Test suite
-%if %{with_tests}
-BuildRequires: redis >= 3
+BuildRequires: %{?scl_prefix}php-pecl-igbinary-devel
 %endif
 
 Requires:      %{?scl_prefix}php(zend-abi) = %{php_zend_api}
 Requires:      %{?scl_prefix}php(api) = %{php_core_api}
 %if %{with_igbin}
-Requires:      %{?sub_prefix}php-pecl(igbinary)%{?_isa}
+Requires:      %{?scl_prefix}php-pecl(igbinary)%{?_isa}
 %endif
 %{?_sclreq:Requires: %{?scl_prefix}runtime%{?_sclreq}%{?_isa}}
 
@@ -64,37 +57,19 @@ Provides:      %{?scl_prefix}php-%{pecl_name}%{?_isa}       = %{version}
 Provides:      %{?scl_prefix}php-pecl(%{pecl_name})         = %{version}
 Provides:      %{?scl_prefix}php-pecl(%{pecl_name})%{?_isa} = %{version}
 
-%if 0%{?fedora} >= 29 || 0%{?rhel} >= 8 || "%{php_version}" > "7.3"
+%if "%{php_version}" > "7.2"
 Obsoletes:     %{?scl_prefix}php-pecl-%{pecl_name}          < 4
 Provides:      %{?scl_prefix}php-pecl-%{pecl_name}          = %{version}-%{release}
 Provides:      %{?scl_prefix}php-pecl-%{pecl_name}%{?_isa}  = %{version}-%{release}
 %else
 # A single version can be installed
+Conflicts:     %{?sub_prefix}php-pecl-%{pecl_name} < 4
 Conflicts:     %{?scl_prefix}php-pecl-%{pecl_name} < 4
 %endif
 
-%if "%{?vendor}" == "Remi Collet" && 0%{!?scl:1} && 0%{?rhel}
-# Other third party repo stuff
-%if "%{php_version}" > "5.6"
-Obsoletes:     php56u-pecl-%{pecl_name}4 <= %{version}
-Obsoletes:     php56w-pecl-%{pecl_name}4 <= %{version}
-%endif
-%if "%{php_version}" > "7.0"
-Obsoletes:     php70u-pecl-%{pecl_name}4 <= %{version}
-Obsoletes:     php70w-pecl-%{pecl_name}4 <= %{version}
-%endif
-%if "%{php_version}" > "7.1"
-Obsoletes:     php71u-pecl-%{pecl_name}4 <= %{version}
-Obsoletes:     php71w-pecl-%{pecl_name}4 <= %{version}
-%endif
-%if "%{php_version}" > "7.2"
-Obsoletes:     php72u-pecl-%{pecl_name}4 <= %{version}
-Obsoletes:     php72w-pecl-%{pecl_name}4 <= %{version}
-%endif
-%if "%{php_version}" > "7.3"
-Obsoletes:     php73u-pecl-%{pecl_name}4 <= %{version}
-Obsoletes:     php73w-pecl-%{pecl_name}4 <= %{version}
-%endif
+%if "%{?scl_prefix}" != "%{?sub_prefix}"
+Provides:      %{?scl_prefix}php-pecl-%{pecl_name}4         = %{version}-%{release}
+Provides:      %{?scl_prefix}php-pecl-%{pecl_name}4%{?_isa} = %{version}-%{release}
 %endif
 
 %if 0%{?fedora} < 20 && 0%{?rhel} < 7
@@ -120,17 +95,12 @@ Package built for PHP %(%{__php} -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSIO
 # rename source folder
 mv %{pecl_name}-%{upstream_version}%{?upstream_prever} NTS
 
-# Don't install/register tests, license, and bundled library
+# Don't install/register tests, license
 sed -e 's/role="test"/role="src"/' \
     %{?_licensedir:-e '/COPYING/s/role="doc"/role="src"/' } \
-    -e '/liblzf/d' \
     -i package.xml
 
 cd NTS
-
-# Use system library
-rm -r liblzf
-
 # Sanity check, really often broken
 extver=$(sed -n '/#define PHP_REDIS_VERSION/{s/.* "//;s/".*$//;p}' php_redis.h)
 if test "x${extver}" != "x%{upstream_version}%{?upstream_prever}"; then
@@ -138,11 +108,6 @@ if test "x${extver}" != "x%{upstream_version}%{?upstream_prever}"; then
    exit 1
 fi
 cd ..
-
-%if %{with_zts}
-# duplicate for ZTS build
-cp -pr NTS ZTS
-%endif
 
 # Drop in the bit of configuration
 cat > %{ini_name} << 'EOF'
@@ -184,8 +149,6 @@ EOF
 
 
 %build
-%{?dtsenable}
-
 cd NTS
 %{_bindir}/phpize
 %configure \
@@ -195,38 +158,14 @@ cd NTS
     --enable-redis-igbinary \
 %endif
     --enable-redis-lzf \
-    --with-liblzf \
     --with-php-config=%{_bindir}/php-config
 make %{?_smp_mflags}
 
-%if %{with_zts}
-cd ../ZTS
-%{_bindir}/zts-phpize
-%configure \
-    --enable-redis \
-    --enable-redis-session \
-%if %{with_igbin}
-    --enable-redis-igbinary \
-%endif
-    --enable-redis-lzf \
-    --with-liblzf \
-    --with-php-config=%{_bindir}/zts-php-config
-make %{?_smp_mflags}
-%endif
-
 
 %install
-%{?dtsenable}
-
 # Install the NTS stuff
 make -C NTS install INSTALL_ROOT=%{buildroot}
 install -D -m 644 %{ini_name} %{buildroot}%{php_inidir}/%{ini_name}
-
-%if %{with_zts}
-# Install the ZTS stuff
-make -C ZTS install INSTALL_ROOT=%{buildroot}
-install -D -m 644 %{ini_name} %{buildroot}%{php_ztsinidir}/%{ini_name}
-%endif
 
 # Install the package XML file
 install -D -m 644 package.xml %{buildroot}%{pecl_xmldir}/%{name}.xml
@@ -247,55 +186,7 @@ done
     --define extension=%{buildroot}%{php_extdir}/%{pecl_name}.so \
     --modules | grep %{pecl_name}
 
-%if %{with_zts}
-%{__ztsphp} --no-php-ini \
-%if %{with_igbin}
-    --define extension=igbinary.so \
-%endif
-    --define extension=%{buildroot}%{php_ztsextdir}/%{pecl_name}.so \
-    --modules | grep %{pecl_name}
-%endif
 
-%if %{with_tests}
-cd NTS/tests
-
-# Launch redis server
-mkdir -p data
-pidfile=$PWD/redis.pid
-port=$(%{__php} -r 'echo 9000 + PHP_MAJOR_VERSION*100 + PHP_MINOR_VERSION*10 + PHP_INT_SIZE;')
-%{_root_bindir}/redis-server   \
-    --bind      127.0.0.1      \
-    --port      $port          \
-    --daemonize yes            \
-    --logfile   $PWD/redis.log \
-    --dir       $PWD/data      \
-    --pidfile   $pidfile
-
-sed -e "s/6379/$port/" -i *.php
-
-# Run the test Suite
-ret=0
-export TEST_PHP_EXECUTABLE=%{__php}
-export TEST_PHP_ARGS="--no-php-ini \
-%if %{with_igbin}
-    --define extension=igbinary.so \
-%endif
-    --define extension=%{buildroot}%{php_extdir}/%{pecl_name}.so"
-$TEST_PHP_EXECUTABLE $TEST_PHP_ARGS TestRedis.php || ret=1
-
-# Cleanup
-if [ -f $pidfile ]; then
-   %{_root_bindir}/redis-cli -p $port shutdown
-fi
-cat $PWD/redis.log
-
-exit $ret
-%else
-: Upstream test suite disabled
-%endif
-
-
-%if 0%{?fedora} < 24 && 0%{?rhel} < 8
 # when pear installed alone, after us
 %triggerin -- %{?scl_prefix}php-pear
 if [ -x %{__pecl} ] ; then
@@ -312,7 +203,6 @@ fi
 if [ $1 -eq 0 -a -x %{__pecl} ] ; then
     %{pecl_uninstall} %{pecl_name} >/dev/null || :
 fi
-%endif
 
 
 %files
@@ -323,13 +213,11 @@ fi
 %{php_extdir}/%{pecl_name}.so
 %config(noreplace) %{php_inidir}/%{ini_name}
 
-%if %{with_zts}
-%{php_ztsextdir}/%{pecl_name}.so
-%config(noreplace) %{php_ztsinidir}/%{ini_name}
-%endif
-
 
 %changelog
+* Wed Jul 11 2018 Remi Collet <remi@remirepo.net> - 4.1.0-1
+- cleanup for SCLo build
+
 * Tue Jul 10 2018 Remi Collet <remi@remirepo.net> - 4.1.0-1
 - update to 4.1.0 (stable)
 
