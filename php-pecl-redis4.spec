@@ -18,6 +18,9 @@
 %if "%{scl}" == "rh-php71"
 %global sub_prefix sclo-php71-
 %endif
+%if "%{scl}" == "rh-php72"
+%global sub_prefix sclo-php72-
+%endif
 %else
 %global _root_bindir %{_bindir}
 %endif
@@ -26,7 +29,7 @@
 %global with_igbin  1
 # after 40-igbinary
 %global ini_name    50-%{pecl_name}.ini
-%global upstream_version 4.1.0
+%global upstream_version 4.1.1
 
 Summary:       Extension for communicating with the Redis key-value store
 Name:          %{?sub_prefix}php-pecl-redis4
@@ -215,6 +218,9 @@ fi
 
 
 %changelog
+* Fri Aug 17 2018 Remi Collet <remi@remirepo.net> - 4.1.1-1
+- update to 4.1.1 (stable)
+
 * Wed Jul 11 2018 Remi Collet <remi@remirepo.net> - 4.1.0-1
 - cleanup for SCLo build
 
