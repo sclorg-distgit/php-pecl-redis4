@@ -2,7 +2,7 @@
 #
 # remirepo spec file for php-pecl-redis4
 #
-# Copyright (c) 2012-2018 Remi Collet
+# Copyright (c) 2012-2019 Remi Collet
 # License: CC-BY-SA
 # http://creativecommons.org/licenses/by-sa/4.0/
 #
@@ -29,7 +29,7 @@
 %global with_igbin  1
 # after 40-igbinary
 %global ini_name    50-%{pecl_name}.ini
-%global upstream_version 4.2.0
+%global upstream_version 4.3.0
 
 Summary:       Extension for communicating with the Redis key-value store
 Name:          %{?sub_prefix}php-pecl-redis4
@@ -37,7 +37,6 @@ Version:       %{upstream_version}%{?upstream_prever:~%{upstream_prever}}
 Release:       1%{?dist}
 Source0:       http://pecl.php.net/get/%{pecl_name}-%{upstream_version}%{?upstream_prever}.tgz
 License:       PHP
-Group:         Development/Languages
 URL:           http://pecl.php.net/package/redis
 
 BuildRequires: gcc
@@ -128,26 +127,32 @@ extension = %{pecl_name}.so
 ;session.save_path = "tcp://host1:6379?weight=1, tcp://host2:6379?weight=2&timeout=2.5, tcp://host3:6379?weight=2"
 
 ; Configuration
-;redis.arrays.autorehash = ''
-;redis.arrays.connecttimeout = ''
+;redis.arrays.algorithm = ''
+;redis.arrays.auth = ''
+;redis.arrays.autorehash = 0
+;redis.arrays.connecttimeout = 0
 ;redis.arrays.distributor = ''
 ;redis.arrays.functions = ''
 ;redis.arrays.hosts = ''
-;redis.arrays.index = ''
-;redis.arrays.lazyconnect = ''
+;redis.arrays.index = 0
+;redis.arrays.lazyconnect = 0
 ;redis.arrays.names = ''
-;redis.arrays.pconnect = ''
+;redis.arrays.pconnect = 0
 ;redis.arrays.previous = ''
-;redis.arrays.readtimeout = ''
-;redis.arrays.retryinterval = ''
-;redis.clusters.persistent = ''
-;redis.clusters.read_timeout = ''
+;redis.arrays.readtimeout = 0
+;redis.arrays.retryinterval = 0
+;redis.arrays.consistent = 0
+;redis.clusters.auth = 0
+;redis.clusters.persistent = 0
+;redis.clusters.read_timeout = 0
 ;redis.clusters.seeds = ''
-;redis.clusters.timeout = ''
-;redis.session.locking_enabled = ''
-;redis.session.lock_expire = ''
-;redis.session.lock_retries = ''
-;redis.session.lock_wait_time = ''
+;redis.clusters.timeout = 0
+;redis.pconnect.pooling_enabled = 0
+;redis.pconnect.connection_limit = 0
+;redis.session.locking_enabled = 0
+;redis.session.lock_expire = 0
+;redis.session.lock_retries = 10
+;redis.session.lock_wait_time = 2000
 EOF
 
 
@@ -218,6 +223,9 @@ fi
 
 
 %changelog
+* Thu Mar 14 2019 Remi Collet <remi@remirepo.net> - 4.3.0-1
+- update to 4.3.0
+
 * Mon Nov 19 2018 Remi Collet <remi@remirepo.net> - 4.2.0-1
 - update to 4.2.0
 
